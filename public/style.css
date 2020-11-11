@@ -1,0 +1,86 @@
+.mainbox {
+    width: 60%;
+    position: absolute;
+    top: 0;
+    right: 3vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+
+.box1 {
+    height: 40vh;
+    border-radius: 10px;
+    margin-bottom: 5vh;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    flex-wrap: wrap;
+    font-family: 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+}
+
+.chart-container {
+    position: relative;
+    height: 60vh;
+    border-radius: 10px;
+    margin-bottom: 5vh;
+    background-color: rgba(191, 191, 191, .5);
+}
+
+h1 {
+    width: 50vw;
+    position: fixed;
+    font-size: 3em;
+}
+
+h2 {
+    width: 25vw;
+    height: 25vh;
+}
+
+body {
+    background-image: url(monument.jpg);
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+.temps {
+    font-size: 4em;
+}
+
+.box3 {
+    width: 50vw;
+    display: flex;
+    justify-content: space-between;
+}
+
+@media only screen and (max-width: 800px) {
+    .mainbox {
+        position: relative;
+    }
+    h1 {
+        width: 100vw;
+        position: relative;
+        text-align: center;
+    }
+    h2 {
+        display: block;
+    }
+    .box1 {
+        width: 100vw;
+        height: 90vh;
+        display: block;
+    }
+    .box3 {
+        width: 100vw;
+        flex-direction: column;
+    }
+    .chart-container {
+        width: 100vw;
+    }
+    body {
+        background-image: url(lincoln.jpg);
+    }
+}
