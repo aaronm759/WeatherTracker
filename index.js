@@ -6,7 +6,8 @@ const schedule = require('node-schedule');
 require('dotenv').config();
 
 const app = express();
-app.listen(2999, () => console.log('listening'));
+const port = process.env.PORT || 2999;
+app.listen(port, () => console.log('listening'));
 app.use(express.static('public'));
 app.use(express.json({ limit: '10mb' }));
 
