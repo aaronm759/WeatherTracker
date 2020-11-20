@@ -11,24 +11,49 @@ app.listen(port, () => console.log('listening'));
 app.use(express.static('public'));
 app.use(express.json({ limit: '10mb' }));
 
-const database = new Datastore('actualWeather.db');
-const database2 = new Datastore('1DForecast.db');
-database.loadDatabase();
-database2.loadDatabase();
-database.ensureIndex({ fieldName: 'theDate' });
-database2.ensureIndex({ fieldName: 'theDate' });
+//mongodb+srv://aaronwt:<password>@clusterwt.xfrob.mongodb.net/<dbname>?retryWrites=true&w=majority
+
+
+const { MongoClient } = require('mongodb');
+
+async function main() {
+    const password = process.env.DB_KEY;
+    const uri = "mongodb+srv://" + password + "@clusterwt.xfrob.mongodb.net/weathertrackerdata?retryWrites=true&w=majority";
+    const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+
+
+    try {
+        await client.connect();
+        const database = client.db("weathertrackerdata").collection("actualweather");
+        const database2 = client.db("weathertrackerdata").collection("forecast1day");
+
+        schedule.scheduleJob('0 0 8 * * *', function () {
+
+            getYesterdayWeather(database);
+            get1DayForecast(database2);
+
+        });
+
+        //await getDataForGraph(database, database2);
+
+    } catch (e) {
+        console.error(e);
+    }
+};
+
+main().catch(console.err);
+
+
+
+
+
 
 
 /*----------------------------------------------*/
 /*---------------data collection----------------*/
 /*----------------------------------------------*/
 
-schedule.scheduleJob('0 0 8 * * *', function () {
 
-    getYesterdayWeather();
-    get1DayForecast();
-
-});
 
 
 
@@ -36,7 +61,7 @@ schedule.scheduleJob('0 0 8 * * *', function () {
 
 //Actual weather
 
-async function getYesterdayWeather() {
+async function getYesterdayWeather(database) {
     try {
         const apikey = process.env.API_KEY;
         var d = new Date();
@@ -48,7 +73,7 @@ async function getYesterdayWeather() {
         const actualAvgTemp = data.forecast.forecastday[0].day.avgtemp_f;
         const actualPrecip = data.forecast.forecastday[0].day.totalprecip_mm;
         const actualWeather = { theDate, actualAvgTemp, actualPrecip };
-        database.insert(actualWeather);
+        database.insertOne(actualWeather);
     }
     catch (err) {
         console.log(err);
@@ -60,7 +85,7 @@ async function getYesterdayWeather() {
 
 //1 Day forecast
 
-async function get1DayForecast() {
+async function get1DayForecast(database2) {
     try {
         const apikey = process.env.API_KEY;
         const response = await fetch('http://api.weatherapi.com/v1/forecast.json?key=' + apikey + '&q=20002&days=7');
@@ -69,61 +94,131 @@ async function get1DayForecast() {
         const fc1AvgTemp = data.forecast.forecastday[1].day.avgtemp_f;
         const fc1Precip = data.forecast.forecastday[1].day.totalprecip_mm;
         const fc1Weather = { theDate, fc1AvgTemp, fc1Precip };
-        database2.insert(fc1Weather);
+        database2.insertOne(fc1Weather);
     }
     catch (err) {
         console.log(err);
     }
 };
+
+
+
 /*---------------------------------------*/
 /*-Sending Data to be Graphed/Displayed--*/
 /*---------------------------------------*/
 
 
+const dbQuery = [];
 
-database.find({}, { theDate: 1, actualAvgTemp: 1, _id: 0 }, (err, data) => {
-    if (err) {
-        response.end();
-        return;
-    }
-    const graphData = [];
+async function back1Day() {
+    var dy = new Date();
+    dy.setDate(dy.getDate() - 1);
+    const day1 = dy.toISOString().substring(0, 10);
+    dbQuery.push(day1);
+};
 
-    for (x of data) {
-        const day = x.theDate
-        const aTemp = x.actualAvgTemp
-        database2.find({ theDate: day }, { theDate: 1, fc1AvgTemp: 1, _id: 0 }, (err2, data2) => {
-            if (err2) {
-                response.end();
-                return;
-            }
-            const coords = { day, aTemp, data2 };
-            graphData.push(coords);
 
-            const y = data.length
+async function back2Day() {
+    var dy = new Date();
+    dy.setDate(dy.getDate() - 2);
+    const day2 = dy.toISOString().substring(0, 10);
+    dbQuery.push(day2);
+};
 
-            for (i = 1; i <= y; i++) {
-                if (i === y) {
-                    app.get('/api3', (request, response) => {
-                        response.json(graphData);
 
-                    });
+async function back3Day() {
+    var dy = new Date();
+    dy.setDate(dy.getDate() - 3);
+    const day3 = dy.toISOString().substring(0, 10);
+    dbQuery.push(day3);
+};
+
+
+async function back4Day() {
+    var dy = new Date();
+    dy.setDate(dy.getDate() - 4);
+    const day4 = dy.toISOString().substring(0, 10);
+    dbQuery.push(day4);
+};
+
+
+/*for (z of dbQuery) {
+
+    database.find({ theDate: z }, projection: { theDate: 1, actualAvgTemp: 1, _id: 0 }, (err, data) => {
+        if (err) {
+            response.end();
+            return;
+        }
+        const graphData = [];
+
+        for (x of data) {
+            const day = x.theDate
+            const aTemp = x.actualAvgTemp
+            database2.find({ theDate: day }, { theDate: 1, fc1AvgTemp: 1, _id: 0 }, (err2, data2) => {
+                if (err2) {
+                    response.end();
+                    return;
                 }
-                continue;
-            };
+                const coords = { day, aTemp, data2 };
+                graphData.push(coords);
 
-        });
+                const y = data.length
+
+                for (i = 1; i <= y; i++) {
+                    if (i === y) {
+                        app.get('/api3', (request, response) => {
+                            response.json(graphData);
+
+                        });
+                    }
+                    continue;
+                };
+
+            });
+
+        };
+    });
+
+}
+*/
+
+
+async function getDataForGraph(database, database2) {
+
+    //building query
+
+    back1Day();
+    back2Day();
+    back3Day();
+    back4Day();
+
+    ;
+
+    for (z of dbQuery) {
+        database.findOne({ theDate: z },
+            { projection: { theDate: 1, actualAvgTemp: 1, _id: 0 } },
+            (err, res) => {
+                if (res) {
+                    console.log('it worked');
+                } else {
+                    console.log('not found');
+                }
+            })
+
 
     };
-});
+};
+
+
 
 
 
 function sendPredictedTemp() {
     const d = new Date();
-    const d4 = d.toISOString().substring(0, 10);
+    const today = d.toISOString().substring(0, 10);
 
 
-    database2.findOne({ theDate: d4 }, { fc1AvgTemp: 1, _id: 0 }, (err, data) => {
+    database2.findOne({ theDate: today }, { fc1AvgTemp: 1, _id: 0 }, (err, data) => {
         if (err) {
             response.end();
             return;
@@ -144,4 +239,4 @@ function sendPredictedTemp() {
     })
 
 };
-sendPredictedTemp();
+//sendPredictedTemp();
