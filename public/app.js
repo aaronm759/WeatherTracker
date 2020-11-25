@@ -14,64 +14,66 @@ async function getChartData() {
     for (x of data) {
         const day = x.day;
         const aTemp = x.aTemp;
-        const fTemp = x.data2[0].fc1AvgTemp;
+        const fTemp = x.ftemp;
         xlabel.push(day);
         y1label.push(aTemp);
         y2label.push(fTemp);
 
     };
+    graphChart();
 };
 getChartData();
 
-const ctx = document.getElementById('myChart').getContext('2d');
-const mychart = new Chart(ctx, {
-    type: 'line',
-    data: {
-        labels: xlabel,
-        datasets: [{
-            label: 'Avg Temp',
-            data: y1label,
-            backgroundColor: ['rgba(4, 0, 130, 0)'],
-            borderColor: ['rgba(214, 0, 18, 1)'],
-            borderWidth: 2,
-            fill: false,
-            pointRadius: 5
-        },
-        {
-            label: 'Predicted Avg Temp',
-            data: y2label,
-            backgroundColor: ['rgba(92, 87, 255, 0)'],
-            borderColor: ['rgba(0, 0, 0, 1)'],
-            borderWidth: 2,
-            pointRadius: 5
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-            yAxes: [{
-                gridLines: {
-                    color: 'rgba(0, 0, 0, 1)'
-                },
-                ticks: {
-                    fontColor: '#000'
-                }
-            }],
-            xAxes: [{
-                gridLines: {
-                    color: 'rgba(0, 0, 0, 1)'
-                },
-                ticks: {
-                    fontColor: '#000'
-                }
+async function graphChart() {
+    const ctx = document.getElementById('myChart').getContext('2d');
+    const mychart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: xlabel,
+            datasets: [{
+                label: 'Avg Temp',
+                data: y1label,
+                backgroundColor: ['rgba(4, 0, 130, 0)'],
+                borderColor: ['rgba(214, 0, 18, 1)'],
+                borderWidth: 2,
+                fill: false,
+                pointRadius: 5
+            },
+            {
+                label: 'Predicted Avg Temp',
+                data: y2label,
+                backgroundColor: ['rgba(92, 87, 255, 0)'],
+                borderColor: ['rgba(0, 0, 0, 1)'],
+                borderWidth: 2,
+                pointRadius: 5
             }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                yAxes: [{
+                    gridLines: {
+                        color: 'rgba(0, 0, 0, 1)'
+                    },
+                    ticks: {
+                        fontColor: '#000'
+                    }
+                }],
+                xAxes: [{
+                    gridLines: {
+                        color: 'rgba(0, 0, 0, 1)'
+                    },
+                    ticks: {
+                        fontColor: '#000'
+                    }
+                }]
+            }
         }
-    }
 
 
-});
-
+    });
+}
 /*--------------------------------------*/
 /*------Get Current Weather-------------*/
 /*--------------------------------------*/
