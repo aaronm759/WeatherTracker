@@ -79,12 +79,11 @@ async function graphChart() {
 /*--------------------------------------*/
 
 async function getCurrentWeather() {
-    const apikey = process.env.API_KEY;
-    const response = await fetch('https://api.weatherapi.com/v1/current.json?key=' + apikey + '&q=20002');
+    const response = await fetch('/cweather');
     const data = await response.json();
-    const cTemp = data.current.temp_f;
-    const cCondition = data.current.condition.text;
-    const precip = data.current.precip_mm;
+    const cTemp = data.cTemp;
+    const cCondition = data.cCondition;
+    const precip = data.precip;
     document.getElementById('ctemp').textContent = cTemp;
     document.getElementById('precip').textContent = precip;
     document.getElementById('ccondition').textContent = cCondition;

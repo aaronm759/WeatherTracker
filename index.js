@@ -181,3 +181,25 @@ function sendPredictedTemp(database2) {
     })
 
 };
+
+async function sendCurrentWeather() {
+    try {
+        const apikey = process.env.API_KEY;
+        const response = await fetch('https://api.weatherapi.com/v1/current.json?key=' + apikey + '&q=20002');
+        const data = await response.json();
+        const cTemp = data.current.temp_f;
+        const cCondition = data.current.condition.text;
+        const precip = data.current.precip_mm;
+        const cWeather = { cTemp, cCondition, precip };
+
+        app.get('/cweather', (request, response) => {
+            response.json(cWeather);
+
+        });
+    }
+    catch (err) {
+        console.log(err)
+    }
+
+};
+sendCurrentWeather();
